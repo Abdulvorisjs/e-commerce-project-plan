@@ -21,8 +21,84 @@
     - [ ] dotenv, body-parser
   - [x] `controller`, `models`, `routes` papkalar yaratish
 - [x] **Routerlar**
-  - [x] `signin` va `signup` (post metod) routerlar yaratish [src/routes/user.js] (ichiga hech narsa yozmay turish kerak)
-  - [x] `user.js` dagi routerni `index.js` ga chaqirish `app.use('api', userRoutes)`
+  - [x] /api/admin/signup, /api/admin/signin
+  - [x] `signin` va `signup` (post metod) routerlar yaratish [src/routes/auth.js] (ichiga hech narsa yozmay turish kerak)
+  - [x] `auth.js` dagi routerni `index.js` ga chaqirish `app.use('api', userRoutes)`
+---------------------
+- [x] **Schema yaratish**
+  - [x] `userSchema` yaratish [src/models/auth.js]
+  - [x] **maydonlar**
+    - [x] firstName - String, required, trim, min=3, max=10
+    - [x] lastName - String, required, trim, min=3, max=20
+    - [x] userName - String, required, trim, unique, index, lowercase
+    - [x] email - String, required, trim, unique, lowecase
+    - [x] hash_password- String, required
+    - [x] role - String, enum: ['user, admin], default-admin
+    - [x] timestamp 
+---------------------
+- [x] **Passwordni sozlash**
+  - [x] bcrypt (package) ni o'rganib chiqish
+  - [x] virtual funksiyani o'rganib chiqish(mongoose)
+  - [x] virtual function orqali `hash_password` yaratish 
+  - [x] `userSchema` da `authenticate` metod yaratish(tizimga kirishdan kiritilgan pass bilan bazadagi passni hashlab taqqoslash)
+---------------------
+- [x] **signup metodni sozlash**
+  - [x] modeldan user ni chaqirib olish
+  - [x] mongoose dan `findOne` metodni o'rganib chiqish
+  - [x] User modeldan `findOne` (metoddan) email orqali bazadagi user tekshiriladi   
+    - [x] agar topilsa `Already registered`
+    - [x] destructuring assignment haqida o'qish 
+    - [x] body dan kerakli field lar olinadi 
+    - [x] yangi o'zgaruvchiga `User` dan instance olib ichiga olgingan fieldlarni beramiz (yangi object yasaladi)
+    - [x] instance olganda undagi hamma metodlar ham olinadi, yangi objectni `save` degan metodini chaqiramiz
+    - [x] (error, data) parametrlar beriladi, agar error bo'lsa error bervoriladi
+    - [x] error bo'lmasa data, response da qaytariladi
+    - [x] 2 ta `admin` yaratib olgandan keyin, `role` ni default qiymatini `user` ga almashtiriladi 
+    - [x] 2ta user yaratiladi va mongo shellda user larni borligiga ishonch hosil qilinadi
+    - [x] signup metodini [src/controller/auth.js] ga o'tkaziladi(export)
+    - [x] [src/routes/index.js] da signup metodni chaqirib qo'yamiz
+
+
+#### **Day two**
+- [x] **Login**
+  - [x] [src/controller/auth.js] da `signin` nomli metod yaratiladi
+  - [x] `userSchema` da virtual funksiya yaratiladi, `fullName` degan parametr qabul qilib, `firstName` va `lastName` qo'shib qaytariladi
+  - [x] jwt hadida o'qib chiqish kerak 
+    -  [npmjs.com/jwt](https://www.npmjs.com/package/jsonwebtoken) 
+    -  [jwt](https://jwt.io/)
+    -  [Farhod aka](https://www.youtube.com/watch?v=YU9Pama9xA4&ab_channel=FarkhodDadajanov)
+    -  [uzbekcoders](https://community.uzbekcoders.uz/post/jwt-nima-va-u-nega-kerak-60029bd7fe1c9b245345e10f)
+  - [x] .env faylga JWT_SECRET yaratiladi va qiymat beriladi
+  - [x] `User` schemani `findOne` metodi parametriga so'rovdan kelgan email beriladi(bazada shunday user borligini tekshirish uchun)
+    - [x] error bo'lsa error chiqariladi
+    - [x] agar `user` mavjud bo'lsa 
+      - [x] `user` schemadaga authenticate degan metodni chaqiriladi, qiymat sifatida req.body.password beriladi.
+      - [ ] bitta o'zgaruvchiga token tayinlanadi
+      - [ ] **token olish**
+      - [ ] jwt.signin metodiga 
+        - [ ] id ga userdagi id
+        - [ ] jwt secret
+        - [ ] experis in = 1h
+      - [ ] userni ichidagi passworddan boshqa qiymatlar olinadi
+      - [ ] token va user qaytariladi
+      - [x] agar `password` berilmasa invalid password msg yuboriladi
+    - [x] aks holda Error msg yuboriladi
+  - [x] routes da signin chaqirib postmanda test qilinadi
+  ------------------------
+- [x] **Middleware for signin**
+  - [x] `controller` va `routes` papkada admin papka yaratib auth.js fayllarni papkalarga mos ravishda nusxalaymiz 
+  - [x] [routes/admin/auth.js] da route o'zgaradi `/admin/signup`, `/admin/signup`
+  - [x] [izlanib ko'rish kerak](https://www.youtube.com/watch?v=H1NGDp5BsII&ab_channel=FarkhodDadajanov)
+  - [x] [Bundan ham](https://mohirdev.uz/courses/node-js-noldan-boshlab-professionalgacha/lesson/3-express-js-darslari-json-response-va-middlewarelar-haqida/)
+  - [x] [src/controller/admin/auth.js] signup da userda `role: 'admin'` qo'shiladi
+  - [x] signin metodda user.authenticate() va user ni role `admin` likka ham tekshiriladi
+  - [x] `index.js` da `./routes/admin/auth` chaqiriladi
+  - [x] [/src/controller/admin/auth.js] da requireSignIn metod yaratiladi
+    -  token ni olish: req.headers.authorization.split[(" ")[1]
+    -  user ga jwt.verify(token, .env da JWT_SECRET) solishitiriladi
+    -  req.user = user
+    -  next();  
+---------------------
 - [x] **Schema yaratish**
   - [x] `userSchema` yaratish [src/models/user.js]
   - [x] **maydonlar**
@@ -33,8 +109,25 @@
     - [x] hash_password- String, required
     - [x] role - String, enum: ['user, admin], default-admin
     - [x] timestamp 
+---------------------
 - [x] **Passwordni sozlash**
   - [x] bcrypt (package) ni o'rganib chiqish
   - [x] virtual funksiyani o'rganib chiqish(mongoose)
   - [x] virtual function orqali `hash_password` yaratish 
   - [x] `userSchema` da `authenticate` metod yaratish(tizimga kirishdan kiritilgan pass bilan bazadagi passni hashlab taqqoslash)
+---------------------
+- [x] **signup metodni sozlash**
+  - [x] modeldan user ni chaqirib olish
+  - [x] mongoose dan `findOne` metodni o'rganib chiqish
+  - [x] User modeldan `findOne` (metoddan) email orqali bazadagi user tekshiriladi   
+    - [x] agar topilsa `Already registered`
+    - [x] destructuring assignment haqida o'qish 
+    - [x] body dan kerakli field lar olinadi 
+    - [x] yangi o'zgaruvchiga `User` dan instance olib ichiga olgingan fieldlarni beramiz (yangi object yasaladi)
+    - [x] instance olganda undagi hamma metodlar ham olinadi, yangi objectni `save` degan metodini chaqiramiz
+    - [x] (error, data) parametrlar beriladi, agar error bo'lsa error bervoriladi
+    - [x] error bo'lmasa data, response da qaytariladi
+    - [x] 2 ta `admin` yaratib olgandan keyin, `role` ni default qiymatini `user` ga almashtiriladi 
+    - [x] 2ta user yaratiladi va mongo shellda user larni borligiga ishonch hosil qilinadi
+    - [x] signup metodini [src/controller/user.js] ga o'tkaziladi(export)
+    - [x] [src/routes/index.js] da signup metodni chaqirib qo'yamiz
